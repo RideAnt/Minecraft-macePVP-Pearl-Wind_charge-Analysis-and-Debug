@@ -2,7 +2,8 @@
 
 **Release name:** `MC 1.21.11 - Fabric Loader 0.19.2 - Test Build v1`  
 **Internal artifact version:** `1.0.1`  
-**Author:** RideAnt
+**Author:** RideAnt and Codex
+**Tip:** these mod are AI generated
 
 ## Shared dependencies
 
