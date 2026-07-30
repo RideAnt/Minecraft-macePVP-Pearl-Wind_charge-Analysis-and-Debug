@@ -1,9 +1,9 @@
 package com.rideant.pearlwindchargeanalysisdebug;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,22 +23,22 @@ public final class PearlWindChargeAnalysisDebug implements ModInitializer {
         );
     }
 
-    public static boolean shouldRemoveRandomOffset(ProjectileEntity projectile) {
+    public static boolean shouldRemoveRandomOffset(Projectile projectile) {
         if (!ModConfig.get().removeRandomOffset || projectile == null) {
             return false;
         }
 
-        World world = projectile.getEntityWorld();
-        if (world == null || world.isClient()) {
+        Level world = projectile.level();
+        if (world == null || world.isClientSide()) {
             return false;
         }
 
         MinecraftServer server = world.getServer();
-        return server != null && !server.isDedicated();
+        return server != null && !server.isDedicatedServer();
     }
 
     public static void logApplied(
-            ProjectileEntity projectile,
+            Projectile projectile,
             float originalUncertainty
     ) {
         if (!ModConfig.get().debugLog) {
@@ -49,6 +49,41 @@ public final class PearlWindChargeAnalysisDebug implements ModInitializer {
                 "Removed projectile random offset: type={}, uncertainty={}",
                 projectile.getType(),
                 originalUncertainty
+        );
+    }
+
+    public static boolean shouldLogShootDirection() {
+        return ModConfig.get().debugLog;
+    }
+
+    public static void logShootDirection(
+            Projectile projectile,
+            double x,
+            double y,
+            double z
+    ) {
+        double length = Math.sqrt(x * x + y * y + z * z);
+        String direction;
+        if (length < 1.0E-6) {
+            direction = "(zero vector)";
+        } else {
+            double yaw = Math.toDegrees(Math.atan2(-x, z));
+            double pitch = Math.toDegrees(-Math.asin(y / length));
+            direction = String.format(
+                    java.util.Locale.ROOT,
+                    "yaw=%.2f pitch=%.2f vec=(%.3f,%.3f,%.3f)",
+                    yaw,
+                    pitch,
+                    x,
+                    y,
+                    z
+            );
+        }
+
+        LOGGER.info(
+                "Projectile shoot direction: type={}, {}",
+                projectile.getType(),
+                direction
         );
     }
 }

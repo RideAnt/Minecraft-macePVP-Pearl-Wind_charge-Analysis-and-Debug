@@ -1,9 +1,9 @@
 package com.rideant.pearlwindchargeanalysisdebug;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.text.Text;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
 
 public final class DebugNoticeHud {
     private static final int WHITE = 0xFFFFFFFF;
@@ -12,10 +12,10 @@ public final class DebugNoticeHud {
     }
 
     public static void render(
-            DrawContext context,
-            RenderTickCounter tickCounter
+            GuiGraphicsExtractor context,
+            DeltaTracker tickCounter
     ) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         String text = PearlWindChargeAnalysisDebugClient.getNoticeText();
         if (client.player == null
                 || PearlWindChargeAnalysisDebugClient.getNoticeTicks() <= 0
@@ -23,12 +23,12 @@ public final class DebugNoticeHud {
             return;
         }
 
-        int width = client.textRenderer.getWidth(text);
-        int x = (context.getScaledWindowWidth() - width) / 2;
-        int y = context.getScaledWindowHeight() - 28;
-        context.drawTextWithShadow(
-                client.textRenderer,
-                Text.literal(text),
+        int width = client.font.width(text);
+        int x = (context.guiWidth() - width) / 2;
+        int y = context.guiHeight() - 28;
+        context.text(
+                client.font,
+                Component.literal(text),
                 x,
                 y,
                 WHITE

@@ -3,7 +3,6 @@
   "package": "com.example.pearlwindchargeanalysis.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "GameRendererFovInvoker"
   ],
   "injectors": {
     "defaultRequire": 1

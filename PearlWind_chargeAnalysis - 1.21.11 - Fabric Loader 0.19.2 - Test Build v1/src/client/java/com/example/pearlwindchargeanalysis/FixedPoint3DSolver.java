@@ -1,18 +1,17 @@
 package com.example.pearlwindchargeanalysis;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Three-dimensional pearl / wind-charge encounter solver.
@@ -61,22 +60,22 @@ public final class FixedPoint3DSolver {
     }
 
     public static FixedPointSolution solve(
-            MinecraftClient client,
+            Minecraft client,
             PearlTrack track,
             double effectivePearlAgeTick
     ) {
         if (client == null
                 || client.player == null
-                || client.world == null
+                || client.level == null
                 || track == null
                 || !Double.isFinite(effectivePearlAgeTick)
                 || effectivePearlAgeTick < 0.0) {
             return FixedPointSolution.invalid(FixedPointSolution.Status.NO_SOLUTION);
         }
 
-        Vec3d headCenter = getPlayerHeadCenter(client.player);
+        Vec3 headCenter = getPlayerHeadCenter(client.player);
         AnalysisMode mode = PearlWindChargeAnalysisClient.getAnalysisMode();
-        Vec3d inheritedPlayerVelocity =
+        Vec3 inheritedPlayerVelocity =
                 getInheritedPlayerVelocity(client.player, mode);
         boolean collisionValidation = ModConfig.get().validatePathCollisions;
 
@@ -84,8 +83,8 @@ public final class FixedPoint3DSolver {
         if (cached != null
                 && Math.abs(cached.effectiveAgeTick - effectivePearlAgeTick)
                 <= 1.0E-7
-                && cached.headCenter.squaredDistanceTo(headCenter) <= 1.0E-12
-                && cached.inheritedPlayerVelocity.squaredDistanceTo(
+                && cached.headCenter.distanceToSqr(headCenter) <= 1.0E-12
+                && cached.inheritedPlayerVelocity.distanceToSqr(
                         inheritedPlayerVelocity
                 ) <= 1.0E-12
                 && cached.mode == mode
@@ -117,11 +116,11 @@ public final class FixedPoint3DSolver {
     }
 
     private static FixedPointSolution solveUncached(
-            MinecraftClient client,
+            Minecraft client,
             PearlTrack track,
             double effectivePearlAgeTick,
-            Vec3d headCenter,
-            Vec3d inheritedPlayerVelocity
+            Vec3 headCenter,
+            Vec3 inheritedPlayerVelocity
     ) {
         double startTick = effectivePearlAgeTick + 1.0E-4;
 
@@ -193,9 +192,9 @@ public final class FixedPoint3DSolver {
         return FixedPointSolution.invalid(FixedPointSolution.Status.NO_SOLUTION);
     }
 
-    public static Vec3d getPlayerHeadCenter(PlayerEntity player) {
-        Box box = player.getBoundingBox();
-        return new Vec3d(
+    public static Vec3 getPlayerHeadCenter(Player player) {
+        AABB box = player.getBoundingBox();
+        return new Vec3(
                 (box.minX + box.maxX) * 0.5,
                 box.maxY - 0.25,
                 (box.minZ + box.maxZ) * 0.5
@@ -206,46 +205,53 @@ public final class FixedPoint3DSolver {
      * Vanilla projectile launch inheritance: horizontal player velocity is
      * always added; vertical velocity is added only while airborne.
      */
-    public static Vec3d getInheritedPlayerVelocity(
-            PlayerEntity player,
+    public static Vec3 getInheritedPlayerVelocity(
+            Player player,
             AnalysisMode mode
     ) {
         if (player == null || mode != AnalysisMode.MOVING_POINT) {
-            return Vec3d.ZERO;
+            return Vec3.ZERO;
         }
 
-        Vec3d velocity = player.getVelocity();
-        return new Vec3d(
+        Vec3 velocity = player.getDeltaMovement();
+        return new Vec3(
                 velocity.x,
-                player.isOnGround() ? 0.0 : velocity.y,
+                player.onGround() ? 0.0 : velocity.y,
                 velocity.z
         );
     }
 
-    public static Vec3d getPearlWorldPosition(PearlTrack track, double tick) {
+    public static Vec3 getPearlWorldPosition(PearlTrack track, double tick) {
         double geometric = (1.0 - Math.pow(PEARL_DRAG_Q, tick))
                 / (1.0 - PEARL_DRAG_Q);
 
-        Vec3d initialVelocity = track.startVelocity();
+        Vec3 initialVelocity = track.startVelocity();
         double horizontalSpeed = Math.sqrt(
                 initialVelocity.x * initialVelocity.x
                         + initialVelocity.z * initialVelocity.z
         );
 
-        double localX = horizontalSpeed * geometric;
-        double localY = (
+        // 26.2 ThrowableProjectile.tick applies gravity, then air drag (0.99),
+        // then moves by the updated velocity. The closed form below matches that
+        // move-after-update, gravity-then-drag recurrence (verified by
+        // tick-by-tick simulation against the 26.2 jar). The previous formula
+        // modeled move-before + drag-then-gravity, which made the predicted
+        // pearl drift higher than reality by up to ~1 block over a 30-tick flight
+        // and caused the wind-charge auto-aim to miss high.
+        double localX = horizontalSpeed * PEARL_DRAG_Q * geometric;
+        double localY = PEARL_DRAG_Q * (
                 initialVelocity.y
-                        + PEARL_GRAVITY_G / (1.0 - PEARL_DRAG_Q)
+                        + PEARL_GRAVITY_G * PEARL_DRAG_Q / (1.0 - PEARL_DRAG_Q)
         ) * geometric
-                - PEARL_GRAVITY_G * tick / (1.0 - PEARL_DRAG_Q);
+                - PEARL_GRAVITY_G * PEARL_DRAG_Q * tick / (1.0 - PEARL_DRAG_Q);
 
-        return track.coordinateFrame().toWorldPosition(new Vec3d(localX, localY, 0.0));
+        return track.coordinateFrame().toWorldPosition(new Vec3(localX, localY, 0.0));
     }
 
     private static double encounterFunction(
             PearlTrack track,
-            Vec3d headCenter,
-            Vec3d inheritedPlayerVelocity,
+            Vec3 headCenter,
+            Vec3 inheritedPlayerVelocity,
             double effectivePearlAgeTick,
             double encounterTick
     ) {
@@ -254,10 +260,10 @@ public final class FixedPoint3DSolver {
         }
 
         double windFlightTick = encounterTick - effectivePearlAgeTick;
-        Vec3d pearlPos = getPearlWorldPosition(track, encounterTick);
-        Vec3d directionalDisplacement = pearlPos
+        Vec3 pearlPos = getPearlWorldPosition(track, encounterTick);
+        Vec3 directionalDisplacement = pearlPos
                 .subtract(headCenter)
-                .subtract(inheritedPlayerVelocity.multiply(windFlightTick));
+                .subtract(inheritedPlayerVelocity.scale(windFlightTick));
         double requiredDirectionalDistance = directionalDisplacement.length();
         double windDirectionalReach = WIND_CHARGE_SPEED * windFlightTick;
         return requiredDirectionalDistance - windDirectionalReach;
@@ -265,8 +271,8 @@ public final class FixedPoint3DSolver {
 
     private static double bisectRoot(
             PearlTrack track,
-            Vec3d headCenter,
-            Vec3d inheritedPlayerVelocity,
+            Vec3 headCenter,
+            Vec3 inheritedPlayerVelocity,
             double effectivePearlAgeTick,
             double low,
             double high
@@ -321,33 +327,33 @@ public final class FixedPoint3DSolver {
     }
 
     private static FixedPointSolution buildAndValidateSolution(
-            MinecraftClient client,
+            Minecraft client,
             PearlTrack track,
-            Vec3d headCenter,
-            Vec3d inheritedPlayerVelocity,
+            Vec3 headCenter,
+            Vec3 inheritedPlayerVelocity,
             double effectivePearlAgeTick,
             double encounterTick
     ) {
         double windFlightTick = encounterTick - effectivePearlAgeTick;
-        Vec3d encounterPos = getPearlWorldPosition(track, encounterTick);
-        Vec3d aimVector = encounterPos
+        Vec3 encounterPos = getPearlWorldPosition(track, encounterTick);
+        Vec3 aimVector = encounterPos
                 .subtract(headCenter)
-                .subtract(inheritedPlayerVelocity.multiply(windFlightTick));
+                .subtract(inheritedPlayerVelocity.scale(windFlightTick));
         double horizontal = Math.sqrt(
                 aimVector.x * aimVector.x + aimVector.z * aimVector.z
         );
 
-        if (aimVector.lengthSquared() < EPSILON) {
+        if (aimVector.lengthSqr() < EPSILON) {
             return FixedPointSolution.invalid(FixedPointSolution.Status.NO_SOLUTION);
         }
 
         double betaDeg = Math.toDegrees(Math.atan2(aimVector.y, horizontal));
         double targetWorldYawDeg = AngleCalculator.getYawToHorizontalVectorDeg(aimVector);
-        double signedYawDeltaDeg = MathHelper.wrapDegrees(
-                targetWorldYawDeg - client.player.getYaw()
+        double signedYawDeltaDeg = Mth.wrapDegrees(
+                targetWorldYawDeg - client.player.getYRot()
         );
 
-        Vec3d localAim = track.coordinateFrame().toLocalVector(aimVector);
+        Vec3 localAim = track.coordinateFrame().toLocalVector(aimVector);
         double localGammaDeg = Math.toDegrees(Math.atan2(localAim.z, localAim.x));
 
         FixedPointSolution preliminary = new FixedPointSolution(
@@ -375,25 +381,25 @@ public final class FixedPoint3DSolver {
     }
 
     private static FixedPointSolution.Status validateEnvironmentAndPath(
-            MinecraftClient client,
+            Minecraft client,
             PearlTrack track,
-            Vec3d headCenter,
+            Vec3 headCenter,
             double effectivePearlAgeTick,
             FixedPointSolution solution
     ) {
-        ClientWorld world = client.world;
+        ClientLevel world = client.level;
 
         if (!isAirAt(world, headCenter)
                 || !isAirAt(world, solution.encounterWorldPos())) {
             return FixedPointSolution.Status.NON_AIR_PATH;
         }
 
-        Vec3d previousPearlPos = getPearlWorldPosition(track, effectivePearlAgeTick);
+        Vec3 previousPearlPos = getPearlWorldPosition(track, effectivePearlAgeTick);
         double pearlTick = effectivePearlAgeTick;
 
         while (pearlTick < solution.encounterTick() - EPSILON) {
             double nextTick = Math.min(pearlTick + 0.25, solution.encounterTick());
-            Vec3d nextPearlPos = getPearlWorldPosition(track, nextTick);
+            Vec3 nextPearlPos = getPearlWorldPosition(track, nextTick);
 
             if (!isAirAlongSegment(world, previousPearlPos, nextPearlPos)) {
                 return FixedPointSolution.Status.NON_AIR_PATH;
@@ -420,8 +426,8 @@ public final class FixedPoint3DSolver {
         return FixedPointSolution.Status.VALID;
     }
 
-    private static boolean isAirAlongSegment(ClientWorld world, Vec3d start, Vec3d end) {
-        Vec3d delta = end.subtract(start);
+    private static boolean isAirAlongSegment(ClientLevel world, Vec3 start, Vec3 end) {
+        Vec3 delta = end.subtract(start);
         double distance = delta.length();
 
         if (distance < EPSILON) {
@@ -432,7 +438,7 @@ public final class FixedPoint3DSolver {
 
         for (int i = 0; i <= steps; i++) {
             double t = i / (double) steps;
-            Vec3d point = start.add(delta.multiply(t));
+            Vec3 point = start.add(delta.scale(t));
 
             if (!isAirAt(world, point)) {
                 return false;
@@ -442,22 +448,22 @@ public final class FixedPoint3DSolver {
         return true;
     }
 
-    private static boolean isAirAt(ClientWorld world, Vec3d point) {
-        BlockPos pos = BlockPos.ofFloored(point.x, point.y, point.z);
+    private static boolean isAirAt(ClientLevel world, Vec3 point) {
+        BlockPos pos = BlockPos.containing(point.x, point.y, point.z);
         return world.getFluidState(pos).isEmpty();
     }
 
     private static boolean hitsBlock(
-            ClientWorld world,
-            PlayerEntity player,
-            Vec3d start,
-            Vec3d end
+            ClientLevel world,
+            Player player,
+            Vec3 start,
+            Vec3 end
     ) {
-        HitResult result = world.raycast(new RaycastContext(
+        HitResult result = world.clip(new ClipContext(
                 start,
                 end,
-                RaycastContext.ShapeType.COLLIDER,
-                RaycastContext.FluidHandling.NONE,
+                ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE,
                 player
         ));
 
@@ -474,8 +480,8 @@ public final class FixedPoint3DSolver {
 
     private record CacheEntry(
             double effectiveAgeTick,
-            Vec3d headCenter,
-            Vec3d inheritedPlayerVelocity,
+            Vec3 headCenter,
+            Vec3 inheritedPlayerVelocity,
             AnalysisMode mode,
             boolean collisionValidation,
             FixedPointSolution solution

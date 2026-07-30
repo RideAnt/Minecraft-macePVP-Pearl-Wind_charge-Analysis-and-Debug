@@ -1,8 +1,8 @@
 package com.example.pearlwindchargeanalysis;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
 
 /**
  * Read-only integration point for optional companion tools.
@@ -18,10 +18,10 @@ public final class AimTargetProvider {
      * is currently available. This method never changes player state.
      */
     public static double[] resolve(int index) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (!ModConfig.get().enabled
                 || client.player == null
-                || client.world == null
+                || client.level == null
                 || index < 1
                 || index > 2) {
             return null;
@@ -32,7 +32,7 @@ public final class AimTargetProvider {
             return null;
         }
 
-        EnderPearlEntity pearl = PearlWindChargeAnalysisClient.TRACKER
+        ThrownEnderpearl pearl = PearlWindChargeAnalysisClient.TRACKER
                 .getPearlEntity(client, track);
         if (pearl == null) {
             return null;
@@ -45,7 +45,7 @@ public final class AimTargetProvider {
             return null;
         }
 
-        float tickProgress = client.getRenderTickCounter().getTickProgress(false);
+        float tickProgress = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         double clientAgeTick = PearlWindChargeAnalysisClient.TRACKER.getAgeTicks(
                 client,
                 track,
@@ -77,7 +77,7 @@ public final class AimTargetProvider {
 
         return new double[]{
                 solution.targetWorldYawDeg(),
-                MathHelper.clamp(-solution.betaDeg(), -90.0, 90.0)
+                Mth.clamp(-solution.betaDeg(), -90.0, 90.0)
         };
     }
 }
