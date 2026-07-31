@@ -1,6 +1,6 @@
 package com.example.pearlwindchargeanalysis;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Result produced by the three-dimensional encounter solver.
@@ -13,7 +13,7 @@ public record FixedPointSolution(
         double signedYawDeltaDeg,
         double encounterTick,
         double windFlightTick,
-        Vec3d encounterWorldPos
+        Vec3 encounterWorldPos
 ) {
     public enum Status {
         VALID,
@@ -31,7 +31,7 @@ public record FixedPointSolution(
                 Double.NaN,
                 Double.NaN,
                 Double.NaN,
-                Vec3d.ZERO
+                Vec3.ZERO
         );
     }
 

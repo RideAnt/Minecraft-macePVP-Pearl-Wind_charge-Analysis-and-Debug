@@ -5,8 +5,8 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 /**
  * Mod Menu integration with a Cloth Config screen.
@@ -24,21 +24,21 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
                 .setTitle(
-                        Text.translatable(
+                        Component.translatable(
                                 "title.pearlwind_chargeanalysis.config"
                         )
                 );
 
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
         ConfigCategory general = builder.getOrCreateCategory(
-                Text.translatable(
+                Component.translatable(
                         "category.pearlwind_chargeanalysis.general"
                 )
         );
 
         general.addEntry(entryBuilder
                 .startBooleanToggle(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.enabled"
                         ),
                         config.enabled
@@ -49,7 +49,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startBooleanToggle(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.show_assist_hud"
                         ),
                         config.showAssistHud
@@ -60,7 +60,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startEnumSelector(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.assist_line_mode"
                         ),
                         AssistLineMode.class,
@@ -75,7 +75,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startBooleanToggle(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.validate_path_collisions"
                         ),
                         config.validatePathCollisions
@@ -88,7 +88,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startBooleanToggle(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.server_timing_compensation"
                         ),
                         config.serverTimingCompensation
@@ -101,7 +101,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startIntSlider(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.best_beta_min"
                         ),
                         (int) Math.round(config.bestBetaMin),
@@ -114,7 +114,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startIntSlider(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.best_beta_max"
                         ),
                         (int) Math.round(config.bestBetaMax),
@@ -127,7 +127,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startIntSlider(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.vertical_aim_max"
                         ),
                         (int) Math.round(config.verticalAimMax),
@@ -140,7 +140,7 @@ public final class PearlWindChargeAnalysisModMenu implements ModMenuApi {
 
         general.addEntry(entryBuilder
                 .startIntSlider(
-                        Text.translatable(
+                        Component.translatable(
                                 "option.pearlwind_chargeanalysis.horizontal_aim_max"
                         ),
                         (int) Math.round(config.horizontalAimMax),

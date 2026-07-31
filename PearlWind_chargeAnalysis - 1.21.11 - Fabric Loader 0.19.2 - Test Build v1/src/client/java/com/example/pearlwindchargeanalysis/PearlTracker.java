@@ -1,15 +1,14 @@
 package com.example.pearlwindchargeanalysis;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
-import net.minecraft.util.math.Vec3d;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Tracks ender pearls thrown by the local player.
@@ -17,8 +16,8 @@ import java.util.UUID;
 public final class PearlTracker {
     private final Map<UUID, PearlTrack> flyingPearls = new LinkedHashMap<>();
 
-    public void tick(MinecraftClient client) {
-        if (client.world == null || client.player == null) {
+    public void tick(Minecraft client) {
+        if (client.level == null || client.player == null) {
             flyingPearls.clear();
             FixedPoint3DSolver.clearCache();
             return;
@@ -58,36 +57,36 @@ public final class PearlTracker {
      * only while the world is not frozen; otherwise /tick freeze would display
      * a false extra tick.
      */
-    public double getAgeTicks(MinecraftClient client, PearlTrack track, float tickProgress) {
+    public double getAgeTicks(Minecraft client, PearlTrack track, float tickProgress) {
         Entity entity = getPearlEntity(client, track);
         if (entity == null) {
             return -1.0;
         }
 
         double renderFraction = 0.0;
-        if (client.world != null && !client.world.getTickManager().isFrozen()) {
+        if (client.level != null && !client.level.tickRateManager().isFrozen()) {
             renderFraction = Math.max(0.0, Math.min(1.0, tickProgress));
         }
 
-        return Math.max(0.0, entity.age + renderFraction);
+        return Math.max(0.0, entity.tickCount + renderFraction);
     }
 
-    public EnderPearlEntity getPearlEntity(MinecraftClient client, PearlTrack track) {
-        if (client.world == null) {
+    public ThrownEnderpearl getPearlEntity(Minecraft client, PearlTrack track) {
+        if (client.level == null) {
             return null;
         }
 
-        Entity entity = client.world.getEntityById(track.entityId());
-        if (!(entity instanceof EnderPearlEntity pearl)) {
+        Entity entity = client.level.getEntity(track.entityId());
+        if (!(entity instanceof ThrownEnderpearl pearl)) {
             return null;
         }
 
-        return pearl.getUuid().equals(track.uuid()) ? pearl : null;
+        return pearl.getUUID().equals(track.uuid()) ? pearl : null;
     }
 
-    private void scanForNewPearls(MinecraftClient client) {
-        for (Entity entity : client.world.getEntities()) {
-            if (!(entity instanceof EnderPearlEntity pearl)) {
+    private void scanForNewPearls(Minecraft client) {
+        for (Entity entity : client.level.entitiesForRendering()) {
+            if (!(entity instanceof ThrownEnderpearl pearl)) {
                 continue;
             }
 
@@ -95,20 +94,20 @@ public final class PearlTracker {
                 continue;
             }
 
-            UUID uuid = pearl.getUuid();
+            UUID uuid = pearl.getUUID();
             if (flyingPearls.containsKey(uuid)) {
                 continue;
             }
 
-            Vec3d velocity = pearl.getVelocity();
+            Vec3 velocity = pearl.getDeltaMovement();
             double actualAlpha = AngleCalculator.getVelocityElevationDeg(velocity);
-            Vec3d pearlStartPos = new Vec3d(pearl.getX(), pearl.getY(), pearl.getZ());
-            Vec3d throwerStartPos = new Vec3d(
+            Vec3 pearlStartPos = new Vec3(pearl.getX(), pearl.getY(), pearl.getZ());
+            Vec3 throwerStartPos = new Vec3(
                     client.player.getX(),
                     client.player.getY(),
                     client.player.getZ()
             );
-            Vec3d fallbackLook = AngleCalculator.getHorizontalLookVector(client.player);
+            Vec3 fallbackLook = AngleCalculator.getHorizontalLookVector(client.player);
             PearlCoordinateFrame frame = PearlCoordinateFrame.create(
                     pearlStartPos,
                     velocity,
@@ -127,21 +126,21 @@ public final class PearlTracker {
         }
     }
 
-    private void removeGonePearls(MinecraftClient client) {
+    private void removeGonePearls(Minecraft client) {
         flyingPearls.entrySet().removeIf(
                 entry -> getPearlEntity(client, entry.getValue()) == null
         );
     }
 
     private static boolean isOwnedByClientPlayer(
-            EnderPearlEntity pearl,
-            MinecraftClient client
+            ThrownEnderpearl pearl,
+            Minecraft client
     ) {
         if (client.player == null) {
             return false;
         }
 
         Entity owner = pearl.getOwner();
-        return owner != null && owner.getUuid().equals(client.player.getUuid());
+        return owner != null && owner.getUUID().equals(client.player.getUUID());
     }
 }
