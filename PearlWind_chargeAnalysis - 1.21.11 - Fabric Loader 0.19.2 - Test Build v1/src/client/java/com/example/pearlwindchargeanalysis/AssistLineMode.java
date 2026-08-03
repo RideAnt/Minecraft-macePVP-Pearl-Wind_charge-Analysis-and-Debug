@@ -1,7 +1,8 @@
 package com.example.pearlwindchargeanalysis;
 
+import net.minecraft.text.Text;
+
 import java.util.Locale;
-import net.minecraft.network.chat.Component;
 
 public enum AssistLineMode {
     INDEPENDENT_AXES("independent_axes"),
@@ -17,8 +18,8 @@ public enum AssistLineMode {
         return configValue;
     }
 
-    public Component displayName() {
-        return Component.translatable(
+    public Text displayName() {
+        return Text.translatable(
                 "option.pearlwind_chargeanalysis.assist_line_mode."
                         + configValue
         );

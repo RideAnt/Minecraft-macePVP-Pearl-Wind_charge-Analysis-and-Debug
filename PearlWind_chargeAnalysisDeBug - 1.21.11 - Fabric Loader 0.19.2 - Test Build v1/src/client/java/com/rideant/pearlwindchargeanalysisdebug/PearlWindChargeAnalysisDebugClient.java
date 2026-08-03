@@ -1,21 +1,21 @@
 package com.rideant.pearlwindchargeanalysisdebug;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public final class PearlWindChargeAnalysisDebugClient
         implements ClientModInitializer {
     private static final int NOTICE_DURATION_TICKS = 20;
 
-    private static KeyMapping toggleDebugLockKey;
+    private static KeyBinding toggleDebugLockKey;
     private static int lockedPearlIndex;
     private static int noticeTicks;
     private static String noticeText = "";
@@ -24,12 +24,12 @@ public final class PearlWindChargeAnalysisDebugClient
     public void onInitializeClient() {
         ModConfig.get();
 
-        KeyMapping.Category category = KeyMapping.Category.register(
-                Identifier.fromNamespaceAndPath(PearlWindChargeAnalysisDebug.MOD_ID, "category")
+        KeyBinding.Category category = KeyBinding.Category.create(
+                Identifier.of(PearlWindChargeAnalysisDebug.MOD_ID, "category")
         );
-        toggleDebugLockKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        toggleDebugLockKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.pearlwind_chargeanalysis_debug.toggle_debug_lock",
-                InputConstants.Type.KEYSYM,
+                InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_GRAVE_ACCENT,
                 category,
                 0
@@ -43,15 +43,15 @@ public final class PearlWindChargeAnalysisDebugClient
             }
         });
 
-        LevelRenderEvents.START_MAIN.register(context ->
+        WorldRenderEvents.START_MAIN.register(context ->
                 DebugAimController.renderFrame(
-                        Minecraft.getInstance(),
+                        MinecraftClient.getInstance(),
                         lockedPearlIndex
                 )
         );
 
         HudElementRegistry.addLast(
-                Identifier.fromNamespaceAndPath(
+                Identifier.of(
                         PearlWindChargeAnalysisDebug.MOD_ID,
                         "debug_notice"
                 ),
@@ -67,8 +67,8 @@ public final class PearlWindChargeAnalysisDebugClient
         return noticeText;
     }
 
-    private static void handleKeyInput(Minecraft client) {
-        while (toggleDebugLockKey.consumeClick()) {
+    private static void handleKeyInput(MinecraftClient client) {
+        while (toggleDebugLockKey.wasPressed()) {
             if (!ModConfig.get().debugAutoAim) {
                 lockedPearlIndex = 0;
                 showNotice("调试追踪未启用");
@@ -76,7 +76,7 @@ public final class PearlWindChargeAnalysisDebugClient
             }
 
             if (client.player == null
-                    || client.level == null
+                    || client.world == null
                     || !client.isInSingleplayer()) {
                 lockedPearlIndex = 0;
                 showNotice("不可锁定");
@@ -102,7 +102,7 @@ public final class PearlWindChargeAnalysisDebugClient
         }
     }
 
-    private static void updateAutomaticLock(Minecraft client) {
+    private static void updateAutomaticLock(MinecraftClient client) {
         if (!DebugAimController.canOperate(client)) {
             lockedPearlIndex = 0;
             return;

@@ -1,8 +1,8 @@
 package com.example.pearlwindchargeanalysis;
 
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Shared angle and vector helpers.
@@ -18,10 +18,10 @@ public final class AngleCalculator {
     }
 
     public static double getLookElevationDeg(Entity entity) {
-        return -Mth.wrapDegrees(entity.getXRot());
+        return -MathHelper.wrapDegrees(entity.getPitch());
     }
 
-    public static double getVelocityElevationDeg(Vec3 velocity) {
+    public static double getVelocityElevationDeg(Vec3d velocity) {
         double horizontal = Math.sqrt(
                 velocity.x * velocity.x + velocity.z * velocity.z
         );
@@ -45,19 +45,19 @@ public final class AngleCalculator {
                 && betaDeg <= max + EPSILON;
     }
 
-    public static double distance3d(Vec3 a, Vec3 b) {
+    public static double distance3d(Vec3d a, Vec3d b) {
         double dx = a.x - b.x;
         double dy = a.y - b.y;
         double dz = a.z - b.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    public static Vec3 getHorizontalLookVector(Entity entity) {
-        double yaw = Math.toRadians(entity.getYRot());
-        return new Vec3(-Math.sin(yaw), 0.0, Math.cos(yaw));
+    public static Vec3d getHorizontalLookVector(Entity entity) {
+        double yaw = Math.toRadians(entity.getYaw());
+        return new Vec3d(-Math.sin(yaw), 0.0, Math.cos(yaw));
     }
 
-    public static Vec3 getDirectionFromGameAnglesDeg(
+    public static Vec3d getDirectionFromGameAnglesDeg(
             double elevationDeg,
             double gameYawDeg
     ) {
@@ -65,14 +65,14 @@ public final class AngleCalculator {
         double yaw = Math.toRadians(gameYawDeg);
         double horizontal = Math.cos(elevation);
 
-        return new Vec3(
+        return new Vec3d(
                 -Math.sin(yaw) * horizontal,
                 Math.sin(elevation),
                 Math.cos(yaw) * horizontal
         );
     }
 
-    public static double getYawToHorizontalVectorDeg(Vec3 vector) {
+    public static double getYawToHorizontalVectorDeg(Vec3d vector) {
         return normalizeGameYawDeg(
                 Math.toDegrees(Math.atan2(-vector.x, vector.z))
         );
@@ -91,14 +91,14 @@ public final class AngleCalculator {
     }
 
     public static double getGameYawDeg(Entity entity) {
-        return normalizeGameYawDeg(entity.getYRot());
+        return normalizeGameYawDeg(entity.getYaw());
     }
 
     public static double signedHorizontalYawDeltaDeg(
             Entity entity,
-            Vec3 targetVector
+            Vec3d targetVector
     ) {
         double targetYaw = getYawToHorizontalVectorDeg(targetVector);
-        return Mth.wrapDegrees(targetYaw - entity.getYRot());
+        return MathHelper.wrapDegrees(targetYaw - entity.getYaw());
     }
 }

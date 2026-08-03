@@ -1,18 +1,19 @@
 package com.example.pearlwindchargeanalysis;
 
+import net.minecraft.client.MinecraftClient;
+import com.example.pearlwindchargeanalysis.mixin.client.GameRendererFovInvoker;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 
 /**
  * Text and first-person assist-line HUD.
@@ -48,16 +49,16 @@ public final class HudRenderer {
     private HudRenderer() {
     }
 
-    public static void render(GuiGraphicsExtractor context, DeltaTracker tickCounter) {
-        Minecraft client = Minecraft.getInstance();
+    public static void render(DrawContext context, RenderTickCounter tickCounter) {
+        MinecraftClient client = MinecraftClient.getInstance();
 
-        if (client.player == null || client.level == null || !ModConfig.get().enabled) {
+        if (client.player == null || client.world == null || !ModConfig.get().enabled) {
             return;
         }
 
         boolean holdingPearl = isHolding(client, Items.ENDER_PEARL);
         boolean holdingWindCharge = isHolding(client, Items.WIND_CHARGE);
-        float tickProgress = tickCounter.getGameTimeDeltaPartialTick(false);
+        float tickProgress = tickCounter.getTickProgress(false);
 
         List<Line> lines = new ArrayList<>();
 
@@ -86,7 +87,7 @@ public final class HudRenderer {
     }
 
     private static void addPearlLines(
-            Minecraft client,
+            MinecraftClient client,
             float tickProgress,
             List<Line> lines
     ) {
@@ -134,7 +135,7 @@ public final class HudRenderer {
     }
 
     private static void addFixedWindChargeLines(
-            Minecraft client,
+            MinecraftClient client,
             float tickProgress,
             List<Line> lines
     ) {
@@ -333,8 +334,8 @@ public final class HudRenderer {
     }
 
     private static void drawFixedPointAimCues(
-            GuiGraphicsExtractor context,
-            Minecraft client,
+            DrawContext context,
+            MinecraftClient client,
             float tickProgress
     ) {
         double currentBeta = AngleCalculator.getLookElevationDeg(client.player);
@@ -375,8 +376,9 @@ public final class HudRenderer {
             int color = getAimColor(betaError, gammaError);
             ScreenPoint point = projectAimDirection(
                     client,
-                    context.guiWidth(),
-                    context.guiHeight(),
+                    tickProgress,
+                    context.getScaledWindowWidth(),
+                    context.getScaledWindowHeight(),
                     config.assistLineMode,
                     solution.betaDeg(),
                     solution.targetWorldYawDeg()
@@ -439,7 +441,7 @@ public final class HudRenderer {
     }
 
     private static AnalysisEntry selectDisplayedPearl(
-            Minecraft client,
+            MinecraftClient client,
             float tickProgress
     ) {
         List<AnalysisEntry> entries = analyzeFirstTwoPearls(client, tickProgress);
@@ -464,7 +466,7 @@ public final class HudRenderer {
     }
 
     private static List<AnalysisEntry> analyzeFirstTwoPearls(
-            Minecraft client,
+            MinecraftClient client,
             float tickProgress
     ) {
         List<AnalysisEntry> entries = new ArrayList<>(2);
@@ -524,8 +526,8 @@ public final class HudRenderer {
     }
 
     private static void drawAimCueAt(
-            GuiGraphicsExtractor context,
-            Minecraft client,
+            DrawContext context,
+            MinecraftClient client,
             String label,
             ScreenPoint targetPoint,
             int color
@@ -535,10 +537,10 @@ public final class HudRenderer {
         boolean independent = ModConfig.get().assistLineMode
                 == AssistLineMode.INDEPENDENT_AXES;
         int horizontalCenterX = independent
-                ? getVanillaCrosshairCenterX(context.guiWidth())
+                ? getVanillaCrosshairCenterX(context.getScaledWindowWidth())
                 : x;
         int verticalCenterY = independent
-                ? getVanillaCrosshairCenterY(context.guiHeight())
+                ? getVanillaCrosshairCenterY(context.getScaledWindowHeight())
                 : y;
 
         drawBestBetaHorizontalCue(
@@ -565,7 +567,8 @@ public final class HudRenderer {
      * axes. Perspective mode projects the complete target direction.
      */
     private static ScreenPoint projectAimDirection(
-            Minecraft client,
+            MinecraftClient client,
+            float tickProgress,
             int width,
             int height,
             AssistLineMode mode,
@@ -575,6 +578,7 @@ public final class HudRenderer {
         if (mode == AssistLineMode.INDEPENDENT_AXES) {
             return projectIndependentAxes(
                     client,
+                    tickProgress,
                     width,
                     height,
                     targetBetaDeg,
@@ -584,6 +588,7 @@ public final class HudRenderer {
 
         return projectPerspectiveDirection(
                 client,
+                tickProgress,
                 width,
                 height,
                 targetBetaDeg,
@@ -592,17 +597,18 @@ public final class HudRenderer {
     }
 
     private static ScreenPoint projectIndependentAxes(
-            Minecraft client,
+            MinecraftClient client,
+            float tickProgress,
             int width,
             int height,
             double targetBetaDeg,
             double targetWorldYawDeg
     ) {
-        Camera camera = client.gameRenderer.mainCamera();
-        double yawDelta = Mth.wrapDegrees(
-                targetWorldYawDeg - camera.yRot()
+        Camera camera = client.gameRenderer.getCamera();
+        double yawDelta = MathHelper.wrapDegrees(
+                targetWorldYawDeg - camera.getYaw()
         );
-        double betaDelta = targetBetaDeg + camera.xRot();
+        double betaDelta = targetBetaDeg + camera.getPitch();
 
         if (Math.abs(yawDelta) >= 89.9 || Math.abs(betaDelta) >= 89.9) {
             return null;
@@ -610,6 +616,8 @@ public final class HudRenderer {
 
         double focalLength = getFocalLength(
                 client,
+                camera,
+                tickProgress,
                 height
         );
         if (!Double.isFinite(focalLength)) {
@@ -632,38 +640,39 @@ public final class HudRenderer {
     }
 
     private static ScreenPoint projectPerspectiveDirection(
-            Minecraft client,
+            MinecraftClient client,
+            float tickProgress,
             int width,
             int height,
             double targetBetaDeg,
             double targetWorldYawDeg
     ) {
-        Camera camera = client.gameRenderer.mainCamera();
-        double cameraYawDeg = camera.yRot();
-        double cameraBetaDeg = -camera.xRot();
+        Camera camera = client.gameRenderer.getCamera();
+        double cameraYawDeg = camera.getYaw();
+        double cameraBetaDeg = -camera.getPitch();
 
-        Vec3 forward = AngleCalculator.getDirectionFromGameAnglesDeg(
+        Vec3d forward = AngleCalculator.getDirectionFromGameAnglesDeg(
                 cameraBetaDeg,
                 cameraYawDeg
         );
 
         double cameraYawRad = Math.toRadians(cameraYawDeg);
-        Vec3 right = new Vec3(
+        Vec3d right = new Vec3d(
                 -Math.cos(cameraYawRad),
                 0.0,
                 -Math.sin(cameraYawRad)
         );
-        Vec3 up = right.cross(forward).normalize();
+        Vec3d up = right.crossProduct(forward).normalize();
 
-        Vec3 targetDirection =
+        Vec3d targetDirection =
                 AngleCalculator.getDirectionFromGameAnglesDeg(
                         targetBetaDeg,
                         targetWorldYawDeg
                 );
 
-        double cameraX = targetDirection.dot(right);
-        double cameraY = targetDirection.dot(up);
-        double cameraZ = targetDirection.dot(forward);
+        double cameraX = targetDirection.dotProduct(right);
+        double cameraY = targetDirection.dotProduct(up);
+        double cameraZ = targetDirection.dotProduct(forward);
 
         if (!Double.isFinite(cameraZ) || cameraZ <= 1.0E-6) {
             return null;
@@ -671,6 +680,8 @@ public final class HudRenderer {
 
         double focalLength = getFocalLength(
                 client,
+                camera,
+                tickProgress,
                 height
         );
         if (!Double.isFinite(focalLength)) {
@@ -693,10 +704,12 @@ public final class HudRenderer {
     }
 
     private static double getFocalLength(
-            Minecraft client,
+            MinecraftClient client,
+            Camera camera,
+            float tickProgress,
             int height
     ) {
-        double fovDeg = getRenderedFovDeg(client);
+        double fovDeg = getRenderedFovDeg(client, camera, tickProgress);
         if (!Double.isFinite(fovDeg)) {
             return Double.NaN;
         }
@@ -706,11 +719,11 @@ public final class HudRenderer {
     }
 
     private static boolean isPointVisible(
-            GuiGraphicsExtractor context,
+            DrawContext context,
             ScreenPoint point
     ) {
-        int width = context.guiWidth();
-        int height = context.guiHeight();
+        int width = context.getScaledWindowWidth();
+        int height = context.getScaledWindowHeight();
         return point.x >= AIM_EDGE_PADDING
                 && point.x <= width - AIM_EDGE_PADDING
                 && point.y >= AIM_EDGE_PADDING
@@ -723,40 +736,35 @@ public final class HudRenderer {
         return dx * dx + dy * dy;
     }
 
-    /**
-     * Reads the rendered vertical FOV from the level projection matrix.
-     *
-     * <p>26.2 removed {@code GameRenderer.getFov}; the FOV now lives baked into
-     * {@link net.minecraft.client.renderer.state.level.CameraRenderState#projectionMatrix}.
-     * For a perspective projection {@code m11 = 1/tan(fovY/2)}, so
-     * {@code fovY = 2*atan(1/m11)}.
-     */
-    private static double getRenderedFovDeg(Minecraft client) {
-        try {
-            Matrix4f projection = client.gameRenderer
-                    .gameRenderState()
-                    .levelRenderState
-                    .cameraRenderState
-                    .projectionMatrix;
-            float m11 = projection.m11();
-            if (Float.isFinite(m11) && m11 > 0.0F) {
-                return Math.toDegrees(2.0 * Math.atan(1.0 / m11));
+    private static double getRenderedFovDeg(
+            MinecraftClient client,
+            Camera camera,
+            float tickProgress
+    ) {
+        if (client.gameRenderer instanceof GameRendererFovInvoker invoker) {
+            float renderedFov = invoker.pearlwind_chargeanalysis$invokeGetFov(
+                    camera,
+                    tickProgress,
+                    true
+            );
+
+            if (Float.isFinite(renderedFov) && renderedFov > 0.0F) {
+                return renderedFov;
             }
-        } catch (NullPointerException ignored) {
-            // Render state not yet populated this frame; fall back to configured FOV.
         }
-        return client.options.fov().get();
+
+        return client.options.getFov().getValue();
     }
 
     private static void drawBestBetaHorizontalCue(
-            GuiGraphicsExtractor context,
-            Minecraft client,
+            DrawContext context,
+            MinecraftClient client,
             String label,
             int targetX,
             int targetY,
             int color
     ) {
-        int width = context.guiWidth();
+        int width = context.getScaledWindowWidth();
 
         int leftStart = Math.max(
                 AIM_EDGE_PADDING,
@@ -780,19 +788,19 @@ public final class HudRenderer {
             context.fill(rightStart, targetY, rightEnd, targetY + 1, color);
         }
 
-        int textWidth = client.font.width(label);
+        int textWidth = client.textRenderer.getWidth(label);
         int textY = Math.max(AIM_EDGE_PADDING, targetY - 10);
 
-        context.text(
-                client.font,
-                Component.literal(label),
+        context.drawTextWithShadow(
+                client.textRenderer,
+                Text.literal(label),
                 leftStart,
                 textY,
                 color
         );
-        context.text(
-                client.font,
-                Component.literal(label),
+        context.drawTextWithShadow(
+                client.textRenderer,
+                Text.literal(label),
                 Math.max(
                         AIM_EDGE_PADDING,
                         rightEnd - textWidth
@@ -803,15 +811,15 @@ public final class HudRenderer {
     }
 
     private static void drawTargetYawVerticalCue(
-            GuiGraphicsExtractor context,
-            Minecraft client,
+            DrawContext context,
+            MinecraftClient client,
             String label,
             int targetX,
             int targetY,
             int color
     ) {
-        int width = context.guiWidth();
-        int height = context.guiHeight();
+        int width = context.getScaledWindowWidth();
+        int height = context.getScaledWindowHeight();
 
         int topStart = Math.max(
                 AIM_EDGE_PADDING,
@@ -841,7 +849,7 @@ public final class HudRenderer {
             );
         }
 
-        int textWidth = client.font.width(label);
+        int textWidth = client.textRenderer.getWidth(label);
         int textX = Math.max(
                 AIM_EDGE_PADDING,
                 Math.min(
@@ -850,16 +858,16 @@ public final class HudRenderer {
                 )
         );
 
-        context.text(
-                client.font,
-                Component.literal(label),
+        context.drawTextWithShadow(
+                client.textRenderer,
+                Text.literal(label),
                 textX,
                 Math.max(AIM_EDGE_PADDING, topStart - 10),
                 color
         );
-        context.text(
-                client.font,
-                Component.literal(label),
+        context.drawTextWithShadow(
+                client.textRenderer,
+                Text.literal(label),
                 textX,
                 Math.min(height - AIM_EDGE_PADDING - 10, bottomEnd + 2),
                 color
@@ -867,7 +875,7 @@ public final class HudRenderer {
     }
 
     private static void drawCircleOutline(
-            GuiGraphicsExtractor context,
+            DrawContext context,
             int centerX,
             int centerY,
             int color
@@ -898,35 +906,35 @@ public final class HudRenderer {
                 + VANILLA_CROSSHAIR_SIZE / 2;
     }
 
-    private static boolean isHolding(Minecraft client, Item item) {
+    private static boolean isHolding(MinecraftClient client, Item item) {
         return client.player != null
                 && (
-                client.player.getMainHandItem().is(item)
-                        || client.player.getOffhandItem().is(item)
+                client.player.getMainHandStack().isOf(item)
+                        || client.player.getOffHandStack().isOf(item)
         );
     }
 
     private static void drawLines(
-            GuiGraphicsExtractor context,
-            Minecraft client,
+            DrawContext context,
+            MinecraftClient client,
             List<Line> lines
     ) {
         if (lines.isEmpty()) {
             return;
         }
 
-        int centerX = context.guiWidth() / 2;
-        int bottomY = context.guiHeight() - 58;
+        int centerX = context.getScaledWindowWidth() / 2;
+        int bottomY = context.getScaledWindowHeight() - 58;
         int baseY = bottomY - Math.max(0, lines.size() - 1) * 10;
 
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
             int y = baseY + i * 10;
-            int textWidth = client.font.width(line.text);
+            int textWidth = client.textRenderer.getWidth(line.text);
 
-            context.text(
-                    client.font,
-                    Component.literal(line.text),
+            context.drawTextWithShadow(
+                    client.textRenderer,
+                    Text.literal(line.text),
                     centerX - textWidth / 2,
                     y,
                     line.color

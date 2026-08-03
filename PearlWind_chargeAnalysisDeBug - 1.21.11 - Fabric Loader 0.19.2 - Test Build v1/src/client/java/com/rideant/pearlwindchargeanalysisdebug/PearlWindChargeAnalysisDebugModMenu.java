@@ -5,8 +5,8 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
 
 public final class PearlWindChargeAnalysisDebugModMenu implements ModMenuApi {
     @Override
@@ -18,19 +18,19 @@ public final class PearlWindChargeAnalysisDebugModMenu implements ModMenuApi {
         ModConfig.Config config = ModConfig.get();
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
-                .setTitle(Component.translatable(
+                .setTitle(Text.translatable(
                         "title.pearlwind_chargeanalysis_debug.config"
                 ));
 
         ConfigEntryBuilder entries = builder.entryBuilder();
         ConfigCategory general = builder.getOrCreateCategory(
-                Component.translatable(
+                Text.translatable(
                         "category.pearlwind_chargeanalysis_debug.general"
                 )
         );
 
         general.addEntry(entries.startBooleanToggle(
-                        Component.translatable(
+                        Text.translatable(
                                 "option.pearlwind_chargeanalysis_debug.debug_auto_aim"
                         ),
                         config.debugAutoAim
@@ -40,7 +40,7 @@ public final class PearlWindChargeAnalysisDebugModMenu implements ModMenuApi {
                 .build());
 
         general.addEntry(entries.startBooleanToggle(
-                        Component.translatable(
+                        Text.translatable(
                                 "option.pearlwind_chargeanalysis_debug.remove_random_offset"
                         ),
                         config.removeRandomOffset
@@ -50,7 +50,7 @@ public final class PearlWindChargeAnalysisDebugModMenu implements ModMenuApi {
                 .build());
 
         general.addEntry(entries.startBooleanToggle(
-                        Component.translatable(
+                        Text.translatable(
                                 "option.pearlwind_chargeanalysis_debug.debug_log"
                         ),
                         config.debugLog

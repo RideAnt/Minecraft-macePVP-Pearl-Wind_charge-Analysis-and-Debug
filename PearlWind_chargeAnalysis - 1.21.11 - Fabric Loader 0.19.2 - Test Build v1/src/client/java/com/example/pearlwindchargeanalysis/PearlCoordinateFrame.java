@@ -1,6 +1,6 @@
 package com.example.pearlwindchargeanalysis;
 
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Local coordinate frame attached to one pearl launch.
@@ -10,39 +10,39 @@ import net.minecraft.world.phys.Vec3;
  * z' = x' x y', so the pearl trajectory lies in the x'y' plane.
  */
 public record PearlCoordinateFrame(
-        Vec3 origin,
-        Vec3 axisX,
-        Vec3 axisY,
-        Vec3 axisZ
+        Vec3d origin,
+        Vec3d axisX,
+        Vec3d axisY,
+        Vec3d axisZ
 ) {
     private static final double EPSILON = 1.0E-10;
-    private static final Vec3 WORLD_UP = new Vec3(0.0, 1.0, 0.0);
+    private static final Vec3d WORLD_UP = new Vec3d(0.0, 1.0, 0.0);
 
     public static PearlCoordinateFrame create(
-            Vec3 origin,
-            Vec3 initialVelocity,
-            Vec3 fallbackHorizontalDirection
+            Vec3d origin,
+            Vec3d initialVelocity,
+            Vec3d fallbackHorizontalDirection
     ) {
-        Vec3 horizontal = new Vec3(initialVelocity.x, 0.0, initialVelocity.z);
+        Vec3d horizontal = new Vec3d(initialVelocity.x, 0.0, initialVelocity.z);
 
-        if (horizontal.lengthSqr() < EPSILON) {
-            horizontal = new Vec3(
+        if (horizontal.lengthSquared() < EPSILON) {
+            horizontal = new Vec3d(
                     fallbackHorizontalDirection.x,
                     0.0,
                     fallbackHorizontalDirection.z
             );
         }
 
-        if (horizontal.lengthSqr() < EPSILON) {
-            horizontal = new Vec3(0.0, 0.0, 1.0);
+        if (horizontal.lengthSquared() < EPSILON) {
+            horizontal = new Vec3d(0.0, 0.0, 1.0);
         }
 
-        Vec3 x = horizontal.normalize();
-        Vec3 y = WORLD_UP;
-        Vec3 z = x.cross(y);
+        Vec3d x = horizontal.normalize();
+        Vec3d y = WORLD_UP;
+        Vec3d z = x.crossProduct(y);
 
-        if (z.lengthSqr() < EPSILON) {
-            z = new Vec3(-1.0, 0.0, 0.0);
+        if (z.lengthSquared() < EPSILON) {
+            z = new Vec3d(-1.0, 0.0, 0.0);
         } else {
             z = z.normalize();
         }
@@ -50,22 +50,22 @@ public record PearlCoordinateFrame(
         return new PearlCoordinateFrame(origin, x, y, z);
     }
 
-    public Vec3 toWorldPosition(Vec3 localPosition) {
+    public Vec3d toWorldPosition(Vec3d localPosition) {
         return origin
-                .add(axisX.scale(localPosition.x))
-                .add(axisY.scale(localPosition.y))
-                .add(axisZ.scale(localPosition.z));
+                .add(axisX.multiply(localPosition.x))
+                .add(axisY.multiply(localPosition.y))
+                .add(axisZ.multiply(localPosition.z));
     }
 
-    public Vec3 toLocalVector(Vec3 worldVector) {
-        return new Vec3(
-                worldVector.dot(axisX),
-                worldVector.dot(axisY),
-                worldVector.dot(axisZ)
+    public Vec3d toLocalVector(Vec3d worldVector) {
+        return new Vec3d(
+                worldVector.dotProduct(axisX),
+                worldVector.dotProduct(axisY),
+                worldVector.dotProduct(axisZ)
         );
     }
 
-    public Vec3 toLocalPosition(Vec3 worldPosition) {
+    public Vec3d toLocalPosition(Vec3d worldPosition) {
         return toLocalVector(worldPosition.subtract(origin));
     }
 }

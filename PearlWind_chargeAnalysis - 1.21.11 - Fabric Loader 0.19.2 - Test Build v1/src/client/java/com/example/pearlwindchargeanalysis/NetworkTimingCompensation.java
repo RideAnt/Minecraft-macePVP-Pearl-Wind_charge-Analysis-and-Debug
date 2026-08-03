@@ -1,8 +1,8 @@
 package com.example.pearlwindchargeanalysis;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.PlayerListEntry;
 
 /**
  * Optional multiplayer timing compensation.
@@ -21,21 +21,21 @@ public final class NetworkTimingCompensation {
     private NetworkTimingCompensation() {
     }
 
-    public static double getEffectivePearlAgeTicks(Minecraft client, double clientAgeTick) {
+    public static double getEffectivePearlAgeTicks(MinecraftClient client, double clientAgeTick) {
         if (!Double.isFinite(clientAgeTick)
                 || client == null
                 || client.player == null
-                || client.isLocalServer()
+                || client.isInSingleplayer()
                 || !ModConfig.get().serverTimingCompensation) {
             return clientAgeTick;
         }
 
-        ClientPacketListener networkHandler = client.getConnection();
+        ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
         if (networkHandler == null) {
             return clientAgeTick;
         }
 
-        PlayerInfo entry = networkHandler.getPlayerInfo(client.player.getUUID());
+        PlayerListEntry entry = networkHandler.getPlayerListEntry(client.player.getUuid());
         if (entry == null) {
             return clientAgeTick;
         }

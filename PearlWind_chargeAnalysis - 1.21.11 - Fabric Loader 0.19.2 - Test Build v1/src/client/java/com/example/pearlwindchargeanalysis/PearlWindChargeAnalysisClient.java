@@ -1,13 +1,13 @@
 package com.example.pearlwindchargeanalysis;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -20,7 +20,7 @@ public final class PearlWindChargeAnalysisClient implements ClientModInitializer
     public static final PearlTracker TRACKER = new PearlTracker();
 
     private static final int MODE_NOTICE_DURATION_TICKS = 60;
-    private static KeyMapping toggleModeKey;
+    private static KeyBinding toggleModeKey;
 
     private static AnalysisMode analysisMode = AnalysisMode.FIXED_POINT;
     private static int modeNoticeTicks = 0;
@@ -32,11 +32,11 @@ public final class PearlWindChargeAnalysisClient implements ClientModInitializer
         ModConfig.get();
         analysisMode = ModConfig.loadMode();
 
-        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "category"));
+        KeyBinding.Category category = KeyBinding.Category.create(Identifier.of(MOD_ID, "category"));
 
-        toggleModeKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        toggleModeKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.pearlwind_chargeanalysis.toggle_mode",
-                InputConstants.Type.KEYSYM,
+                InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_O,
                 category,
                 0
@@ -55,7 +55,7 @@ public final class PearlWindChargeAnalysisClient implements ClientModInitializer
         });
 
         HudElementRegistry.addLast(
-                Identifier.fromNamespaceAndPath(MOD_ID, "angle_hud"),
+                Identifier.of(MOD_ID, "angle_hud"),
                 HudRenderer::render
         );
     }
@@ -86,8 +86,8 @@ public final class PearlWindChargeAnalysisClient implements ClientModInitializer
         FixedPoint3DSolver.clearCache();
     }
 
-    private static void handleKeyInput(Minecraft client) {
-        while (toggleModeKey.consumeClick()) {
+    private static void handleKeyInput(MinecraftClient client) {
+        while (toggleModeKey.wasPressed()) {
             analysisMode = analysisMode.next();
             ModConfig.saveMode(analysisMode);
             FixedPoint3DSolver.clearCache();
