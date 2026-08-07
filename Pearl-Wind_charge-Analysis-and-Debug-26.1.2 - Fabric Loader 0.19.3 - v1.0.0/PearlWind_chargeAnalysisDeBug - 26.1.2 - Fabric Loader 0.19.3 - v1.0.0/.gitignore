@@ -1,0 +1,27 @@
+# Gradle / build output
+.gradle/
+build/
+bin/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Runtime / logs
+run/
+logs/
+log/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# MemPalace dev-tool artifacts
+entities.json
+mempalace.yaml

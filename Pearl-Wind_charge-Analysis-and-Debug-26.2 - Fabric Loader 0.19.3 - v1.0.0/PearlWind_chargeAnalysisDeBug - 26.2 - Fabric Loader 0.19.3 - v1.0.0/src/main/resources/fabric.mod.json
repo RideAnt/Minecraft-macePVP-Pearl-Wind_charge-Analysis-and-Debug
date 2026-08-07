@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "pearlwind_chargeanalysis_debug",
+  "version": "${version}",
+  "name": "PearlWind_chargeAnalysisDeBug",
+  "description": "Singleplayer-only testing companion with P1/P2 camera locking, deterministic projectile spread, and diagnostic logging.",
+  "authors": [
+    "RideAnt"
+  ],
+  "license": "MIT",
+  "icon": "assets/pearlwind_chargeanalysis_debug/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "com.rideant.pearlwindchargeanalysisdebug.PearlWindChargeAnalysisDebug"
+    ],
+    "client": [
+      "com.rideant.pearlwindchargeanalysisdebug.PearlWindChargeAnalysisDebugClient"
+    ],
+    "modmenu": [
+      "com.rideant.pearlwindchargeanalysisdebug.PearlWindChargeAnalysisDebugModMenu"
+    ]
+  },
+  "mixins": [
+    "pearlwind_chargeanalysis_debug.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*",
+    "cloth-config": "*",
+    "pearlwind_chargeanalysis": "*"
+  },
+  "breaks": {
+    "projectileaccuracytest": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
