@@ -1,0 +1,21 @@
+{
+  "modmenu.descriptionTranslation.pearlwind_chargeanalysis": "解析珍珠风弹的轨迹并计算风弹推荐角度",
+  "title.pearlwind_chargeanalysis.config": "PearlWind_chargeAnalysis 设置",
+  "category.pearlwind_chargeanalysis": "PearlWind_chargeAnalysis",
+  "category.pearlwind_chargeanalysis.category": "PearlWind_chargeAnalysis",
+  "category.pearlwind_chargeanalysis.general": "基础设置",
+  "key.categories.pearlwind_chargeanalysis.category": "PearlWind_chargeAnalysis",
+  "key.category.pearlwind_chargeanalysis.category": "PearlWind_chargeAnalysis",
+  "key.pearlwind_chargeanalysis.toggle_mode": "切换定点/动点解析模式",
+  "option.pearlwind_chargeanalysis.enabled": "启用模组",
+  "option.pearlwind_chargeanalysis.show_assist_hud": "显示辅助线 HUD",
+  "option.pearlwind_chargeanalysis.assist_line_mode": "辅助线显示方式",
+  "option.pearlwind_chargeanalysis.assist_line_mode.independent_axes": "独立角轴",
+  "option.pearlwind_chargeanalysis.assist_line_mode.perspective": "真实透视投影",
+  "option.pearlwind_chargeanalysis.best_beta_min": "Best 最小仰角",
+  "option.pearlwind_chargeanalysis.best_beta_max": "Best 最大仰角",
+  "option.pearlwind_chargeanalysis.horizontal_aim_max": "水平角最大检索范围",
+  "option.pearlwind_chargeanalysis.vertical_aim_max": "仰角最大检索范围",
+  "option.pearlwind_chargeanalysis.server_timing_compensation": "服务器时序补偿",
+  "option.pearlwind_chargeanalysis.validate_path_collisions": "启用路径碰撞验证"
+}
