@@ -17,17 +17,20 @@ PearlWind_chargeAnalysis is a client-side Fabric HUD mod that analyzes the three
 - 支持推荐仰角范围、最大检索范围、时序补偿和路径碰撞验证设置。
 - 提供简体中文和英文界面文本。
 
-## 依赖
+## 必需依赖
 
 - Fabric API
 - Cloth Config API
-- Mod Menu
+
+## 可选依赖
+
+- Mod Menu（用于打开图形设置页）
 
 ## 安装
 
-1. 将主模组 JAR 和上述依赖放入同一个 `mods` 文件夹。
+1. 将主模组 JAR 和必需依赖放入同一个 `mods` 文件夹。
 2. 启动游戏并进入世界。
-3. 通过 Mod Menu 打开设置页面。
+3. 安装 Mod Menu 时，可通过其页面打开设置。
 
 普通游戏只安装不带 `sources` 的 JAR。`sources.jar` 用于阅读和调试源码，不应放入游戏的 `mods` 文件夹。
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.1 - Test Build v1
+## 1.0.0
 
 - Finalized the singleplayer testing scope and public documentation.
 - Added P1/P2 camera locking through the main mod's read-only target provider.

@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.1 - Test Build v1
+## 1.0.0
 
 - Finalized public-facing README structure and installation guidance.
 - Clarified fixed-point and moving-point analysis behavior.

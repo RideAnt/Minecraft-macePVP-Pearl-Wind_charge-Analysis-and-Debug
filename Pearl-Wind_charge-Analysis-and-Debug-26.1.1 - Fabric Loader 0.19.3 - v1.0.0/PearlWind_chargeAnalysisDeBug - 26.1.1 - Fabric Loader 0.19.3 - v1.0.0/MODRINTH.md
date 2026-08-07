@@ -2,7 +2,7 @@
 
 ## Version
 
-- Version name: `MC 1.21.11 - Fabric Loader 0.19.2 - Test Build v1`
+- Version name: `MC 26.1.1 - Fabric Loader 0.19.3 - v1.0.0`
 - Version number: `1.0.1`
 - Release channel: `Beta`
 

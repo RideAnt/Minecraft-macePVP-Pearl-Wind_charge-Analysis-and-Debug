@@ -1,6 +1,6 @@
-# PearlWind Test Build v1
+# PearlWind v1.0.0
 
-**Release name:** `MC 1.21.11 - Fabric Loader 0.19.2 - Test Build v1`  
+**Release name:** `MC 26.1.1 - Fabric Loader 0.19.3 - v1.0.0`  
 **Internal artifact version:** `1.0.1`  
 **Author:** RideAnt and Codex
 **Tip:** these mod are AI generated

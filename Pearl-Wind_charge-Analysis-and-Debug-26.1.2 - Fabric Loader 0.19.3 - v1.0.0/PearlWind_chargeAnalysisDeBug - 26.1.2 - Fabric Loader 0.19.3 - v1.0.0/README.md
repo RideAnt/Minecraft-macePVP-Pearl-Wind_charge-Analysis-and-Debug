@@ -1,6 +1,6 @@
 # PearlWind_chargeAnalysisDeBug
 
-**Release label:** `MC 1.21.11 - Fabric Loader 0.19.2 - Test Build v1`  
+**Release label:** `MC 26.1.2 - Fabric Loader 0.19.3 - v1.0.0`  
 **Author:** RideAnt
 
 PearlWind_chargeAnalysisDeBug is a singleplayer-only testing companion for PearlWind_chargeAnalysis. It provides controlled P1/P2 camera locking, deterministic projectile-spread testing, and optional diagnostic logging for repeatable trajectory experiments.
@@ -21,17 +21,20 @@ PearlWind_chargeAnalysisDeBug is a singleplayer-only testing companion for Pearl
 
 附属模组不会锁定主模组的具体迭代版本，元数据使用通配依赖；两者仍需处于兼容的游戏与 Fabric 环境。主模组可以单独运行，附属模组不能脱离主模组运行。
 
-## 依赖
+## 必需依赖
 
 - Fabric API
 - Cloth Config API
-- Mod Menu
+
+## 可选依赖
+
+- Mod Menu（用于打开图形设置页）
 
 ## 安装
 
 1. 安装 PearlWind_chargeAnalysis 主模组。
 2. 将本附属 JAR 和上述依赖放入同一个 `mods` 文件夹。
-3. 通过 Mod Menu 打开 `PearlWind_chargeAnalysisDeBug` 设置。
+3. 安装 Mod Menu 时，可通过其页面打开 `PearlWind_chargeAnalysisDeBug` 设置。
 4. 只启用当前实验需要的功能。
 
 普通游戏只安装不带 `sources` 的 JAR。`sources.jar` 只用于阅读和调试源码。
