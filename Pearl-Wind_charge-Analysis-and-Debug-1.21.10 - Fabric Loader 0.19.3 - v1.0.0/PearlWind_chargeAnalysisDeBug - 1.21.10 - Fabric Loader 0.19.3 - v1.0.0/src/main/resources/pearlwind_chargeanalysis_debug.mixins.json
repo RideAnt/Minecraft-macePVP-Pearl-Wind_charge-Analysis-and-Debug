@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.rideant.pearlwindchargeanalysisdebug.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ProjectileEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

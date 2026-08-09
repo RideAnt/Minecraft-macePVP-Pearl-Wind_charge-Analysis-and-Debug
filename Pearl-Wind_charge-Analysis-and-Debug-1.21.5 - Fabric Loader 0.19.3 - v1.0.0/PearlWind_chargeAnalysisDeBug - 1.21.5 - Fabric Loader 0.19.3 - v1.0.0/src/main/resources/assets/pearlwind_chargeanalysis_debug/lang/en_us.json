@@ -1,0 +1,11 @@
+{
+  "modmenu.descriptionTranslation.pearlwind_chargeanalysis_debug": "Singleplayer testing companion with camera locking, deterministic projectile spread, and diagnostic logs.",
+  "title.pearlwind_chargeanalysis_debug.config": "PearlWind_chargeAnalysisDeBug Settings",
+  "category.pearlwind_chargeanalysis_debug.general": "Debug Settings",
+  "key.categories.pearlwind_chargeanalysis_debug.category": "PearlWind_chargeAnalysisDeBug",
+  "key.category.pearlwind_chargeanalysis_debug.category": "PearlWind_chargeAnalysisDeBug",
+  "key.pearlwind_chargeanalysis_debug.toggle_debug_lock": "Toggle debug pearl lock",
+  "option.pearlwind_chargeanalysis_debug.debug_auto_aim": "Enable debug auto tracking",
+  "option.pearlwind_chargeanalysis_debug.remove_random_offset": "Remove projectile random offset",
+  "option.pearlwind_chargeanalysis_debug.debug_log": "Write debug log"
+}
