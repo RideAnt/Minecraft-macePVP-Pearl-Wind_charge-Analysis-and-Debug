@@ -1,14 +1,17 @@
-Pearl & Wind Charge Analysis and Debug
-This directory contains the client-side main mod and a singleplayer debug companion mod. Both released versions are v1.0.1. The main mod predicts the wind-charge aiming direction from an ender pearl in flight; the Debug mod provides singleplayer debug locking, throw random-offset removal, and logging. By default, both follow the game language and display in Chinese or English.
+# 珍珠风弹解析与 Debug
 
-Installing on 26.2
-For Minecraft 26.2 with Fabric Loader 0.19.3 or later, place release/PearlWind_chargeAnalysis-26.2-1.0.1.jar into mods; add release/PearlWind_chargeAnalysisDebug-26.2-1.0.1.jar if you need the debug features. Also install the matching versions of Fabric API and Cloth Config; Mod Menu is used to open the settings. Remove older mods with the same ID before updating, and do not install multiple versions at the same time.
+本目录包含客户端主模组及单人调试附属模组，正式版本均为 **v1.0.1**。主模组根据飞行中的末影珍珠预测风弹瞄准方向；Debug 可提供单人调试锁定、移除投掷随机偏移及日志功能。两者默认跟随游戏语言显示中文或英文。
 
-By default, the main mod uses the backslash key to toggle between fixed-point and moving-point mode. Saved key bindings are not overwritten by defaults; if there is a conflict with another mod, you can change it in the Controls settings. The Debug mod's auto-aim and random-offset removal are limited to singleplayer debugging and must be enabled in the settings.
+## 26.2 安装
 
-Other versions and merge plan
-The source code covers 1.21.4–1.21.11, 26.1–26.1.2, and 26.2.
+在 Minecraft 26.2、Fabric Loader 0.19.3 或更高版本中，将 `release/PearlWind_chargeAnalysis-26.2-1.0.1.jar` 放入 mods；需要调试功能时再加入 `release/PearlWind_chargeAnalysisDebug-26.2-1.0.1.jar`。同时安装对应版本的 Fabric API 和 Cloth Config；Mod Menu 用于打开设置。更新前移除旧版同 ID 模组，勿同时安装多个版本。
 
-Use JDK 25. For example, run gradlew.bat build -PtargetVersion=26_2 -PmodVersion=1_0_1 in this directory; add -PdebugCompanion=true for the companion mod. Merged jars for older versions should first be verified per version for references, Mixin behavior, and in-game behavior, and then built with a confirmed version range specified via -PminecraftDependency. Fabric Loader must remain at >=0.19.3.
+主模组默认按反斜杠切换定点/动点模式。已保存的按键绑定不会被默认值覆盖；若与其他模组冲突，可在控制设置中更改。Debug 的自动瞄准和去随机偏移限单人调试，需在设置中启用。
 
-The trajectory model is an idealized prediction: it accounts for the pearl's discrete motion, its spawn position, inherited player velocity, and the one-tick phase offset, but actual server timing, random spread, hitboxes, entities, and blocks can still affect the result. See 版本变化.txt for the version changes.
+## 其他版本和合并方案
+
+源码覆盖 1.21.4–1.21.11、26.1–26.1.2 和 26.2。此前主模组逐版构建并比较字节码后，可按 1.21.4–1.21.5、1.21.6–1.21.8、1.21.9–1.21.10、1.21.11、26.1–26.1.2、26.2 分组。26.1–26.1.2 Debug 此前逐版构建的 class 一致；26.2 Debug 单独一组。旧版 1.21.x Debug 部分文件从历史源码及相邻版本补回，尚未对恢复后的源码构建或运行测试，合并范围需逐版确认，不应假定源码一致就能跨版本运行。
+
+按本次要求，仅提供 26.2 主模组和 Debug 的构建产物。完整构建配置在 `build-support/`；使用 JDK 25，例如在该目录运行 `gradlew.bat build -PtargetVersion=26_2 -PmodVersion=1_0_1`，附属模组增加 `-PdebugCompanion=true`。旧版的合并包应分别针对各版本验证引用、Mixin 与游戏内行为后，再通过 `-PminecraftDependency` 指定经确认的范围构建。Fabric Loader 要求保持 `>=0.19.3`。
+
+轨迹模型是理想化预测：考虑珍珠离散运动、出生点、玩家继承速度及一 tick 相位，但实际服务器时序、随机散布、碰撞箱、实体与方块仍可能影响结果。版本变化详见 `版本变化.txt`。
