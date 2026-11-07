@@ -1,18 +1,17 @@
-# Pearl-Wind_charge-Analysis-and-Debug
+# 珍珠风弹解析与 Debug
 
-Source repository for the client-side Fabric projects `PearlWind_chargeAnalysis` and its optional singleplayer testing companion, `PearlWind_chargeAnalysisDeBug`.
+本目录包含客户端主模组及单人调试附属模组，正式版本均为 **v1.0.1**。主模组根据飞行中的末影珍珠预测风弹瞄准方向；Debug 可提供单人调试锁定、移除投掷随机偏移及日志功能。两者默认跟随游戏语言显示中文或英文。
 
-## Select a source bundle
+## 26.2 安装
 
-Choose the top-level folder that exactly matches the Minecraft version and Fabric Loader version you intend to build. Each bundle contains two independent Gradle projects:
+在 Minecraft 26.2、Fabric Loader 0.19.3 或更高版本中，将 `release/PearlWind_chargeAnalysis-26.2-1.0.1.jar` 放入 mods；需要调试功能时再加入 `release/PearlWind_chargeAnalysisDebug-26.2-1.0.1.jar`。同时安装对应版本的 Fabric API 和 Cloth Config；Mod Menu 用于打开设置。更新前移除旧版同 ID 模组，勿同时安装多个版本。
 
-- `PearlWind_chargeAnalysis`: the main HUD and trajectory-analysis mod.
-- `PearlWind_chargeAnalysisDeBug`: the optional companion. It requires the main mod for the same Minecraft version, but does not pin a specific main-mod iteration.
+主模组默认按反斜杠切换定点/动点模式。已保存的按键绑定不会被默认值覆盖；若与其他模组冲突，可在控制设置中更改。Debug 的自动瞄准和去随机偏移限单人调试，需在设置中启用。
 
-## Requirements
+## 其他版本和合并方案
 
-- Fabric API and Cloth Config API are required. Their minimum supported versions are declared in each project's `fabric.mod.json`.
-- Mod Menu is optional and provides the in-game configuration screens.
-- Minecraft 1.21.11 projects target Java 21. Minecraft 26.x projects target Java 25.
+源码覆盖 1.21.4–1.21.11、26.1–26.1.2 和 26.2。此前主模组逐版构建并比较字节码后，可按 1.21.4–1.21.5、1.21.6–1.21.8、1.21.9–1.21.10、1.21.11、26.1–26.1.2、26.2 分组。26.1–26.1.2 Debug 此前逐版构建的 class 一致；26.2 Debug 单独一组。旧版 1.21.x Debug 部分文件从历史源码及相邻版本补回，尚未对恢复后的源码构建或运行测试，合并范围需逐版确认，不应假定源码一致就能跨版本运行。
 
-Each subproject includes its own MIT `LICENSE`, build instructions, changelog, and release-specific README.
+按本次要求，仅提供 26.2 主模组和 Debug 的构建产物。完整构建配置在 `build-support/`；使用 JDK 25，例如在该目录运行 `gradlew.bat build -PtargetVersion=26_2 -PmodVersion=1_0_1`，附属模组增加 `-PdebugCompanion=true`。旧版的合并包应分别针对各版本验证引用、Mixin 与游戏内行为后，再通过 `-PminecraftDependency` 指定经确认的范围构建。Fabric Loader 要求保持 `>=0.19.3`。
+
+轨迹模型是理想化预测：考虑珍珠离散运动、出生点、玩家继承速度及一 tick 相位，但实际服务器时序、随机散布、碰撞箱、实体与方块仍可能影响结果。版本变化详见 `版本变化.txt`。

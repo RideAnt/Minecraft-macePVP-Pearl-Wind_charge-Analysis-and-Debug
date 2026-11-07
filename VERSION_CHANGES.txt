@@ -1,0 +1,13 @@
+PearlWind_chargeAnalysis and PearlWind_chargeAnalysisDebug
+v1.0.0 → v1.0.1
+
+Main mod:
+- Updated to the v1.0.1 math model: pearl gravity and drag are extrapolated per discrete tick, accounting for the wind-charge launch phase, eye position, inherited player velocity, and the full 3D offset.
+- Anchored to the first observed pearl state; improved trajectory tracking, cache cleanup, and multiplayer pearl selection; fixed-point mode now decides whether the thrower has left the start point using horizontal drift only.
+- Added settings for intercepting other players' pearls, assist lines, and path validation, plus a diagnostics API; adjusted the HUD so Pn is at the bottom-left and Wn at the bottom-right, and the center information avoids item names and the armor bar.
+- Improved Simplified Chinese, English, and automatic language switching; the default analysis-mode toggle key is now the backslash key.
+
+Debug companion:
+- Unified the name to PearlWind_chargeAnalysisDebug; added Chinese/English key-category names, settings, and hints; moved the lock notice upward.
+- Provides singleplayer debug locking, random-offset removal, and debug logging; the 26.x source also includes model and trajectory diagnostics.
+- Restored missing source files for some older versions; the restored 1.21.x Debug builds still need per-version builds and in-game verification.

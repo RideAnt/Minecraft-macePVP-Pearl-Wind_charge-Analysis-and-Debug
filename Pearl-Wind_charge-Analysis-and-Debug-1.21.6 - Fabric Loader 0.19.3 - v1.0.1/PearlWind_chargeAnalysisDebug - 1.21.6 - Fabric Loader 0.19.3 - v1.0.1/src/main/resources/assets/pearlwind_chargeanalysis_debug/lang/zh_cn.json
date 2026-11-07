@@ -1,0 +1,15 @@
+{
+  "modmenu.descriptionTranslation.pearlwind_chargeanalysis_debug": "珍珠风弹解析的单人调试辅助工具",
+  "title.pearlwind_chargeanalysis_debug.config": "珍珠风弹解析 Debug 设置",
+  "category.pearlwind_chargeanalysis_debug.general": "调试设置",
+  "key.category.pearlwind_chargeanalysis_debug.category": "PearlWind_chargeAnalysisDebug",
+  "key.categories.pearlwind_chargeanalysis_debug.category": "PearlWind_chargeAnalysisDebug",
+  "key.pearlwind_chargeanalysis_debug.toggle_debug_lock": "切换调试锁定目标",
+  "option.pearlwind_chargeanalysis_debug.debug_auto_aim": "启用单人自动瞄准",
+  "option.pearlwind_chargeanalysis_debug.remove_random_offset": "移除单人投掷随机偏移",
+  "option.pearlwind_chargeanalysis_debug.debug_log": "记录调试日志",
+  "option.pearlwind_chargeanalysis_debug.trajectory_trace": "记录弹射物轨迹",
+  "hud.pearlwind_chargeanalysis_debug.disabled": "调试追踪未启用",
+  "hud.pearlwind_chargeanalysis_debug.unavailable": "不可锁定",
+  "hud.pearlwind_chargeanalysis_debug.locked": "锁定 P%s"
+}

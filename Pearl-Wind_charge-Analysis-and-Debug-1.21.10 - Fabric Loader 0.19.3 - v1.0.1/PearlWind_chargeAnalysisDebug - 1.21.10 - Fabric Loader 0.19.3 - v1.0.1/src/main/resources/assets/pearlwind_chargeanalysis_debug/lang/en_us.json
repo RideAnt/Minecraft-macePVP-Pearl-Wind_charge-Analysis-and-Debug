@@ -1,0 +1,15 @@
+{
+  "modmenu.descriptionTranslation.pearlwind_chargeanalysis_debug": "Single-player debugging tools for Pearl Wind Charge Analysis",
+  "title.pearlwind_chargeanalysis_debug.config": "Pearl Wind Charge Analysis Debug Settings",
+  "category.pearlwind_chargeanalysis_debug.general": "Debug Settings",
+  "key.category.pearlwind_chargeanalysis_debug.category": "PearlWind_chargeAnalysisDebug",
+  "key.categories.pearlwind_chargeanalysis_debug.category": "PearlWind_chargeAnalysisDebug",
+  "key.pearlwind_chargeanalysis_debug.toggle_debug_lock": "Switch debug lock target",
+  "option.pearlwind_chargeanalysis_debug.debug_auto_aim": "Enable single-player auto aim",
+  "option.pearlwind_chargeanalysis_debug.remove_random_offset": "Remove single-player launch spread",
+  "option.pearlwind_chargeanalysis_debug.debug_log": "Enable debug logging",
+  "option.pearlwind_chargeanalysis_debug.trajectory_trace": "Log projectile trajectories",
+  "hud.pearlwind_chargeanalysis_debug.disabled": "Debug tracking is disabled",
+  "hud.pearlwind_chargeanalysis_debug.unavailable": "No target available",
+  "hud.pearlwind_chargeanalysis_debug.locked": "Locked P%s"
+}
